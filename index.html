@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Martelinho de Ouro - Reparo de Amassados (Dark Mode)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              /* PALETA DE CORES ESCURA */
+              background:
+                "hsl(222, 12%, 10%)" /* Fundo principal (preto azulado) */,
+              foreground:
+                "hsl(210, 40%, 96%)" /* Texto principal (cinza claro) */,
+              card: {
+                DEFAULT: "hsl(222, 12%, 15%)" /* Fundo dos cards */,
+                foreground: "hsl(210, 40%, 96%)",
+              },
+              primary: {
+                DEFAULT:
+                  "hsl(200, 100%, 50%)" /* Cor de destaque (azul vibrante) */,
+                foreground:
+                  "hsl(222, 12%, 10%)" /* Texto sobre a cor de destaque */,
+              },
+              secondary: {
+                DEFAULT: "hsl(222, 12%, 12%)" /* Fundo de seções secundárias */,
+                foreground: "hsl(210, 40%, 96%)",
+              },
+              muted: {
+                DEFAULT: "hsl(222, 12%, 15%)" /* Fundo de elementos "muted" */,
+                foreground:
+                  "hsl(210, 20%, 65%)" /* Texto "muted" (cinza mais escuro) */,
+              },
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+                                /* Estilos para componentes customizados e animações */
+                                .btn {
+                                    display: inline-flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    border-radius: 0.375rem;
+                                    font-size: 0.875rem;
+                                    font-weight: 600; /* Dando mais destaque */
+                                    transition: all 0.3s ease;
+                                    outline: none;
+                                    border: 1px solid transparent;
+                                    height: 2.5rem;
+                                    padding: 0 1rem;
+                                }
+
+                                .btn-primary {
+                                    background-color: hsl(200, 100%, 50%);
+                                    color: hsl(222, 12%, 10%);
+                                }
+
+                                .btn-primary:hover {
+                                    background-color: hsl(200, 100%, 60%);
+                                    transform: translateY(-2px);
+                                    box-shadow: 0 4px 20px hsl(200, 100%, 50%, 0.25);
+                                }
+
+                                .input {
+                                    display: flex;
+                                    width: 100%;
+                                    border-radius: 0.375rem;
+                                    border: 1px solid hsl(222, 12%, 25%);
+                                    background-color: hsl(222, 12%, 12%);
+                                    color: hsl(210, 40%, 96%); /* Cor do texto no input */
+                                    padding: 0.75rem 0.75rem;
+                                    font-size: 0.875rem;
+                                    outline: none;
+                                    transition: border-color 0.2s, box-shadow 0.2s;
+                                }
+
+                                .input::placeholder {
+                                    color: hsl(210, 20%, 65%);
+                                }
+
+                                .input:focus {
+                                    border-color: hsl(200, 100%, 50%);
+                                    box-shadow: 0 0 0 2px hsl(200, 100%, 50% / 20%);
+                                }
+
+                                .textarea {
+                                    min-height: 5rem;
+                                    resize: vertical;
+                                }
+
+                                .card {
+                                    border-radius: 0.75rem;
+                                    border: 1px solid hsl(222, 12%, 20%);
+                                    background-color: hsl(222, 12%, 15%); /* Cor do card */
+                                    color: hsl(210, 40%, 96%); /* Cor do texto do card */
+                                    overflow: hidden;
+                                    transition: transform 0.3s ease, box-shadow 0.3s ease;
+                                }
+
+                                .card:hover {
+                                    transform: translateY(-5px);
+                                    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+                                    border-color: hsl(222, 12%, 30%);
+                                }
+
+                                .card-header { padding: 1.5rem; }
+                                .card-content { padding: 0 1.5rem 1.5rem; }
+                                .card-title { font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; }
+                                .card-description { font-size: 0.875rem; color: hsl(210, 20%, 65%); }
+                                .label { font-size: 0.875rem; font-weight: 500; display: block; margin-bottom: 0.5rem; color: hsl(210, 40%, 96%); }
+
+                                /* Animação ao rolar */
+                                .animate-on-scroll {
+                                    opacity: 0;
+                                    transform: translateY(30px);
+                                    transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+                                }
+                                .animate-on-scroll.is-visible {
+                                    opacity: 1;
+                                    transform: translateY(0);
+                                }
+
+                                /* Header Dinâmico */
+                                header {
+                                    position: fixed;
+                                    width: 100%;
+                                    z-index: 50;
+                                    transition: background-color 0.4s ease, box-shadow 0.4s ease, padding 0.4s ease;
+                                }
+                                header.scrolled {
+                                    background-color: hsl(222, 12%, 10%, 0.85); /* Fundo com transparência */
+                                    backdrop-filter: blur(10px);
+                                    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+                                    padding-top: 1rem;
+                                    padding-bottom: 1rem;
+                                }
+
+                                /* --- ESTILOS DO SLIDER --- */
+                                .comparison-slider {
+                                    position: relative;
+                                    width: 100%;
+                                    max-width: 700px; /* Aumentado para mais impacto */
+                                    margin: auto;
+                                    overflow: hidden;
+                                    border-radius: 0.75rem;
+                                    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+                                    border: 2px solid hsl(222, 12%, 20%);
+                                }
+                                /* .comparison-slider img {
+                                    width: 100%;
+                                    height: auto;
+                                    display: block;
+                                    pointer-events: none;
+                                } */
+                                 /* Imagem base ("antes"), que define o tamanho do slider */
+                        .comparison-slider > img {
+                            width: 100%;
+                            height: auto;
+                            display: block;
+                            pointer-events: none;
+                            filter: brightness(0.6);
+                        }
+
+                        /* Imagem de cima ("depois"), que deve preencher todo o slider por baixo do seu container */
+                        .image-after img {
+                            width: 100%;
+                            height: 100%;
+                            object-fit: cover; /* Garante que a imagem cubra a área sem distorcer */
+                            display: block;
+                            pointer-events: none;
+                            transition: filter 0.4s ease;
+                        }
+                                .image-after {
+                                    position: absolute;
+                                    top: 0;
+                                    left: 0;
+                                    height: 100%;
+                                    width: 50%;
+                                    overflow: hidden;
+                                }
+                                .slider-handle {
+                                    position: absolute;
+                                    top: 0;
+                                    left: 50%;
+                                    width: 4px;
+                                    height: 100%;
+                                    background-color: white;
+                                    transform: translateX(-50%);
+                                    cursor: ew-resize;
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                }
+                                .slider-handle-icon {
+                                    width: 40px;
+                                    height: 40px;
+                                    background-color: white;
+                                    border-radius: 50%;
+                                    color: hsl(222, 12%, 10%);
+                                    display: flex;
+                                    align-items: center;
+                                    justify-content: center;
+                                    font-size: 1.25rem;
+                                    box-shadow: 0 0 15px rgba(0,0,0,0.2);
+                                }
+
+                                /* Botão Flutuante WhatsApp */
+                                .whatsapp-float {
+                                    position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+                                    background-color: #25D366; color: #fff; border-radius: 50%;
+                                    display: flex; align-items: center; justify-content: center;
+                                    font-size: 2.5rem; z-index: 100; box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+                                    animation: pulse 2s infinite; transition: transform 0.3s ease;
+                                }
+                                .whatsapp-float:hover { transform: scale(1.1); animation: none; }
+                                @keyframes pulse {
+                                    0% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7); }
+                                    70% { box-shadow: 0 0 0 20px rgba(37, 211, 102, 0); }
+                                    100% { box-shadow: 0 0 0 0 rgba(37, 211, 102, 0); }
+                                }
+                                /* --- ANIMAÇÃO DE ENTRADA DO CABEÇALHO --- */
+
+                  /* 1. Define a animação (deslizar para baixo e aparecer) */
+                  @keyframes fadeInDown {
+                    from {
+                      opacity: 0;
+                      transform: translateY(-30px);
+                    }
+                    to {
+                      opacity: 1;
+                      transform: translateY(0);
+                    }
+                  }
+
+                  /* 2. Aplica a animação ao cabeçalho quando a página carrega */
+                  header {
+                      animation: fadeInDown 0.8s ease-in-out;
+                  }
+                  html {
+              scroll-behavior: smooth;
+            }
+
+            /* --- ESTILOS DO FORMULÁRIO DE FEEDBACK (AVALIAÇÃO) --- */
+      .rating-stars {
+        display: inline-block;
+        direction: rtl; /* Inverte a ordem para a mágica do CSS funcionar */
+        text-align: left;
+      }
+      .rating-stars input[type="radio"] {
+        display: none; /* Esconde os botões de rádio originais */
+      }
+      .rating-stars label {
+        color: #4a5568; /* Cor da estrela vazia */
+        font-size: 2rem;
+        padding: 0 0.15em;
+        cursor: pointer;
+        transition: color 0.2s;
+      }
+      .rating-stars input[type="radio"]:checked ~ label,
+      .rating-stars label:hover,
+      .rating-stars label:hover ~ label {
+        color: #ffc107; /* Cor da estrela cheia/hover */
+      }
+    </style>
+  </head>
+  <body class="bg-background text-foreground">
+    <header class="py-6 bg-transparent text-white">
+      <div class="container mx-auto px-4 flex justify-between items-center">
+        <h1 class="text-2xl font-bold">
+          Martelinho<span class="font-light text-white/70">DeOuro</span>
+        </h1>
+        <nav class="hidden md:flex gap-6">
+          <nav class="hidden md:flex gap-6">
+            <a href="#processo" class="hover:text-primary transition-colors"
+              >O Processo</a
+            >
+            <a href="#vantagens" class="hover:text-primary transition-colors"
+              >Vantagens</a
+            >
+            <a href="#qualidade" class="hover:text-primary transition-colors"
+              >Qualidade</a
+            >
+            <a href="#contato" class="hover:text-primary transition-colors"
+              >Fale Conosco</a
+            >
+            <a href="#sobre-mim" class="hover:text-primary transition-colors"
+              >Sobre Mim</a
+            >
+          </nav>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section
+        class="min-h-screen bg-cover bg-center bg-fixed flex items-center justify-center text-center"
+        style="background-image: url('https://images.unsplash.com/photo-1549399542-7e3f8b79c341?q=80&w=2070&auto=format&fit=crop');"
+      >
+        <div class="bg-black/70 absolute inset-0"></div>
+        <div class="container mx-auto px-4 z-10 animate-on-scroll">
+          <h2
+            class="text-4xl md:text-6xl font-extrabold text-white mb-4 leading-tight"
+          >
+            A Arte de Reparar <br />
+            Sem Deixar Marcas
+          </h2>
+          <p class="text-lg md:text-xl text-white/80 mb-8 max-w-2xl mx-auto">
+            Recuperamos a aparência original do seu veículo com a técnica de
+            martelinho de ouro, garantindo um acabamento perfeito e valorizando
+            seu patrimônio.
+          </p>
+          <a href="#contato" class="btn btn-primary text-lg px-8 py-6"
+            >Solicitar Orçamento</a
+          >
+        </div>
+      </section>
+
+      <section id="processo" class="py-20 bg-background">
+        <div class="container mx-auto px-4">
+          <div class="text-center mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold text-foreground">
+              Nosso Processo de Excelência
+            </h2>
+            <p class="text-muted-foreground mt-2 max-w-xl mx-auto">
+              Cada etapa é executada com precisão cirúrgica para garantir um
+              resultado impecável.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-3 gap-8">
+            <div class="card animate-on-scroll">
+              <div class="card-header">
+                <div class="card-title flex items-center gap-3">
+                  <span
+                    class="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold"
+                    >1</span
+                  >Análise do Dano
+                </div>
+              </div>
+              <div class="card-content">
+                <p class="card-description">
+                  Inspeção detalhada com iluminação especial para avaliar a
+                  extensão do dano e planejar a melhor abordagem.
+                </p>
+              </div>
+            </div>
+            <div
+              class="card animate-on-scroll"
+              style="transition-delay: 150ms;"
+            >
+              <div class="card-header">
+                <div class="card-title flex items-center gap-3">
+                  <span
+                    class="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold"
+                    >2</span
+                  >Acesso e Reparo
+                </div>
+              </div>
+              <div class="card-content">
+                <p class="card-description">
+                  Utilizamos ferramentas de precisão para massagear a lataria
+                  por trás, trazendo-a de volta à sua forma original sem
+                  danificar a pintura.
+                </p>
+              </div>
+            </div>
+            <div
+              class="card animate-on-scroll"
+              style="transition-delay: 300ms;"
+            >
+              <div class="card-header">
+                <div class="card-title flex items-center gap-3">
+                  <span
+                    class="bg-primary text-primary-foreground rounded-full w-8 h-8 flex items-center justify-center text-sm font-bold"
+                    >3</span
+                  >Inspeção Final
+                </div>
+              </div>
+              <div class="card-content">
+                <p class="card-description">
+                  Verificação rigorosa de qualidade para garantir que o reparo
+                  esteja perfeito e invisível, restaurando o brilho da
+                  superfície.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="vantagens" class="py-20 bg-secondary">
+        <div class="container mx-auto px-4">
+          <div class="grid lg:grid-cols-2 gap-12 items-center">
+            <div class="animate-on-scroll">
+              <h2 class="text-3xl font-bold mb-6 text-foreground">
+                Por que escolher o Martelinho de Ouro?
+              </h2>
+              <div class="space-y-6">
+                <div class="flex items-start gap-4">
+                  <i
+                    class="fa-solid fa-shield-halved text-primary text-2xl mt-1"
+                  ></i>
+                  <div>
+                    <h3 class="font-semibold text-lg text-foreground">
+                      Preserva a Pintura Original
+                    </h3>
+                    <p class="text-muted-foreground">
+                      Mantém a originalidade e o valor de revenda do seu
+                      veículo, pois não utiliza massa ou repintura.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <i
+                    class="fa-solid fa-clock-fast text-primary text-2xl mt-1"
+                  ></i>
+                  <div>
+                    <h3 class="font-semibold text-lg text-foreground">
+                      Rapidez e Eficiência
+                    </h3>
+                    <p class="text-muted-foreground">
+                      A maioria dos reparos é concluída em poucas horas, muito
+                      mais rápido que a funilaria tradicional.
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <i
+                    class="fa-solid fa-sack-dollar text-primary text-2xl mt-1"
+                  ></i>
+                  <div>
+                    <h3 class="font-semibold text-lg text-foreground">
+                      Excelente Custo-Benefício
+                    </h3>
+                    <p class="text-muted-foreground">
+                      Um serviço mais acessível que os métodos convencionais,
+                      sem comprometer a qualidade final.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="animate-on-scroll" style="transition-delay: 150ms;">
+              <img
+                src="pessoa.png"
+                alt="Comparação de antes e depois de um reparo de martelinho de ouro"
+                class="rounded-lg shadow-xl w-full h-auto border-4 border-card"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="qualidade" class="py-20 bg-background">
+        <div class="container mx-auto px-4">
+          <div class="text-center mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold text-foreground">
+              Qualidade Comprovada
+            </h2>
+            <p class="text-muted-foreground mt-2 max-w-xl mx-auto">
+              Arraste a barra e veja com seus próprios olhos a mágica acontecer.
+              A prova da nossa qualidade em um gesto.
+            </p>
+          </div>
+
+          <div
+            class="comparison-slider animate-on-scroll"
+            id="comparison-slider"
+          >
+            <!-- <img src="batida2.png" alt="Carro com amassado na porta"> -->
+            <img src="batida2.png" alt="Carro com amassado na porta" />
+
+            <div class="image-after">
+              <img src="batida.png" alt="Carro com a porta reparada" />
+            </div>
+
+            <div class="slider-handle">
+              <div class="slider-handle-icon">
+                <i class="fa-solid fa-arrows-left-right"></i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="feedback" class="py-20 bg-background">
+        <div class="container mx-auto px-4 max-w-2xl">
+          <div class="card animate-on-scroll">
+            <div class="card-header text-center">
+              <div class="card-title text-2xl">Deixe sua Avaliação</div>
+              <p class="card-description">
+                Sua opinião é muito importante para nós e ajuda a melhorar
+                nossos serviços.
+              </p>
+            </div>
+            <div class="card-content">
+              <form id="feedback-form" class="space-y-6">
+                <div class="space-y-2">
+                  <label for="nome-feedback" class="label"
+                    >Seu Nome (opcional)</label
+                  >
+                  <input
+                    id="nome-feedback"
+                    type="text"
+                    class="input"
+                    placeholder="Como podemos te chamar?"
+                  />
+                </div>
+
+                <div class="space-y-2">
+                  <label class="label">Sua Avaliação</label>
+                  <div class="rating-stars">
+                    <input
+                      type="radio"
+                      id="star5"
+                      name="rating"
+                      value="5"
+                      required
+                    /><label for="star5" title="5 estrelas"
+                      ><i class="fas fa-star"></i
+                    ></label>
+                    <input
+                      type="radio"
+                      id="star4"
+                      name="rating"
+                      value="4"
+                    /><label for="star4" title="4 estrelas"
+                      ><i class="fas fa-star"></i
+                    ></label>
+                    <input
+                      type="radio"
+                      id="star3"
+                      name="rating"
+                      value="3"
+                    /><label for="star3" title="3 estrelas"
+                      ><i class="fas fa-star"></i
+                    ></label>
+                    <input
+                      type="radio"
+                      id="star2"
+                      name="rating"
+                      value="2"
+                    /><label for="star2" title="2 estrelas"
+                      ><i class="fas fa-star"></i
+                    ></label>
+                    <input
+                      type="radio"
+                      id="star1"
+                      name="rating"
+                      value="1"
+                    /><label for="star1" title="1 estrela"
+                      ><i class="fas fa-star"></i
+                    ></label>
+                  </div>
+                </div>
+
+                <div class="space-y-2">
+                  <label for="comentario" class="label">Seu Comentário</label>
+                  <textarea
+                    id="comentario"
+                    class="input textarea"
+                    placeholder="Nos conte como foi sua experiência..."
+                    required
+                  ></textarea>
+                </div>
+
+                <button
+                  type="submit"
+                  class="btn btn-primary w-full text-base py-5"
+                >
+                  Enviar Feedback
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="contato" class="py-20 bg-secondary">
+        <div class="container mx-auto px-4 max-w-2xl">
+          <div class="card animate-on-scroll">
+            <div class="card-header text-center">
+              <div class="card-title text-2xl">Vamos Conversar?</div>
+              <p class="card-description">
+                Envie os detalhes e receba um pré-orçamento. Rápido e fácil.
+              </p>
+            </div>
+            <div class="card-content">
+              <form id="contact-form" class="space-y-6">
+                <div class="space-y-2">
+                  <label for="nome" class="label">Seu Nome</label>
+                  <input
+                    id="nome"
+                    type="text"
+                    class="input"
+                    placeholder="Digite seu nome completo"
+                    required
+                  />
+                </div>
+                <div class="space-y-2">
+                  <label for="mensagem" class="label">Mensagem</label>
+                  <textarea
+                    id="mensagem"
+                    class="input textarea"
+                    placeholder="Descreva o dano no veículo, o modelo e o ano."
+                    required
+                  ></textarea>
+                </div>
+                <button
+                  type="submit"
+                  class="btn btn-primary w-full text-base py-5"
+                >
+                  Enviar para Orçamento
+                </button>
+                <p class="text-xs text-muted-foreground text-center pt-2">
+                  Ao clicar no botão, você será redirecionado para o seu
+                  aplicativo de e-mail com as informações preenchidas.
+                </p>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <footer
+        id="sobre-mim"
+        class="bg-background pt-16 pb-8 text-center md:text-left"
+      >
+        <div class="container mx-auto px-4">
+          <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
+            <div
+              class="lg:col-span-2 flex flex-col md:flex-row items-center gap-6"
+            >
+              <div class="flex-shrink-0">
+                <div
+                  class="w-24 h-24 bg-card rounded-full flex items-center justify-center border border-secondary"
+                >
+                  <i class="fa-solid fa-user-tie text-4xl text-primary"></i>
+                </div>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-foreground">
+                  Lucas — Seu Especialista em PDR
+                </h3>
+                <p class="text-muted-foreground mt-2 max-w-md">
+                  Com mais de 10 anos de dedicação ao martelinho de ouro, sou
+                  apaixonado por restaurar a beleza original dos veículos. Cada
+                  amassado é um desafio que assumo com precisão e
+                  perfeccionismo, garantindo um resultado que supera as
+                  expectativas.
+                </p>
+              </div>
+            </div>
+            <div class="text-center md:text-right">
+              <h4 class="font-semibold text-foreground">Fale Comigo</h4>
+              <a
+                href="https://wa.me/5562993186103?text=Olá! Gostaria de um orçamento para o serviço de martelinho de ouro."
+                target="_blank"
+                class="text-primary hover:underline"
+              >
+                (62) 99318-6103
+              </a>
+              <p class="text-sm text-muted-foreground mt-1">
+                ryan.png123@gmail.com
+              </p>
+            </div>
+          </div>
+          <hr class="border-t border-card my-8" />
+          <div class="text-center text-muted-foreground text-sm">
+            <p>&copy; 2025 Martelinho de Ouro. Todos os direitos reservados.</p>
+          </div>
+        </div>
+      </footer>
+
+      <a
+        href="https://wa.me/5562993186103?text=Olá! Gostaria de um orçamento para o serviço de martelinho de ouro."
+        target="_blank"
+        class="whatsapp-float"
+      >
+        <i class="fab fa-whatsapp"></i>
+      </a>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        // --- Lógica para Animação ao Rolar ---
+        const scrollElements = document.querySelectorAll(".animate-on-scroll");
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add("is-visible");
+              }
+            });
+          },
+          {
+            threshold: 0.1,
+          }
+        );
+        scrollElements.forEach((el) => observer.observe(el));
+
+        // --- Lógica para Header Dinâmico ---
+        const header = document.querySelector("header");
+        window.addEventListener("scroll", () => {
+          header.classList.toggle("scrolled", window.scrollY > 50);
+        });
+
+        // --- LÓGICA DO SLIDER ANTES E DEPOIS ---
+        const slider = document.getElementById("comparison-slider");
+        if (slider) {
+          const imageAfter = slider.querySelector(".image-after");
+          const handle = slider.querySelector(".slider-handle");
+          let isDragging = false;
+          const startDrag = (e) => {
+            isDragging = true;
+          };
+          const stopDrag = (e) => {
+            isDragging = false;
+          };
+          const onDrag = (e) => {
+            if (!isDragging) return;
+            let x = e.clientX || e.touches[0].clientX;
+            const rect = slider.getBoundingClientRect();
+            let position = ((x - rect.left) / rect.width) * 100;
+            position = Math.max(0, Math.min(100, position));
+            imageAfter.style.width = position + "%";
+            handle.style.left = position + "%";
+          };
+          slider.addEventListener("mousedown", startDrag);
+          window.addEventListener("mouseup", stopDrag);
+          window.addEventListener("mousemove", onDrag);
+          slider.addEventListener("touchstart", startDrag);
+          window.addEventListener("touchend", stopDrag);
+          window.addEventListener("touchmove", onDrag);
+        }
+
+        // --- Lógica do Formulário de Contato ---
+        document
+          .getElementById("contact-form")
+          .addEventListener("submit", function (e) {
+            e.preventDefault();
+            const nome = document.getElementById("nome").value;
+            const mensagem = document.getElementById("mensagem").value;
+            const assunto = `Orçamento Martelinho de Ouro - ${nome}`;
+            const corpoEmail = `Nome: ${nome}\n\nMensagem:\n${mensagem}`;
+            window.location.href = `mailto:ryan.png123@gmail.com?subject=${encodeURIComponent(
+              assunto
+            )}&body=${encodeURIComponent(corpoEmail)}`;
+            // --- Lógica do Formulário de Feedback ---
+            document
+              .getElementById("feedback-form")
+              .addEventListener("submit", function (e) {
+                e.preventDefault();
+
+                const nome =
+                  document.getElementById("nome-feedback").value ||
+                  "Não informado";
+                const comentario = document.getElementById("comentario").value;
+
+                // Pega a avaliação selecionada
+                const ratingElement = document.querySelector(
+                  'input[name="rating"]:checked'
+                );
+                if (!ratingElement) {
+                  alert(
+                    "Por favor, selecione uma avaliação de 1 a 5 estrelas."
+                  );
+                  return;
+                }
+                const avaliacao = ratingElement.value;
+
+                const assunto = `Novo Feedback Recebido - ${avaliacao} Estrelas`;
+                const corpoEmail = `
+        Um novo feedback foi enviado através do site.
+        -------------------------------------------
+        Nome: ${nome}
+        Avaliação: ${avaliacao} de 5 estrelas
+        Comentário:
+        ${comentario}
+        -------------------------------------------
+    `;
+
+                // Abre o cliente de e-mail do usuário com as informações preenchidas
+                window.location.href = `mailto:ryan.png123@gmail.com?subject=${encodeURIComponent(
+                  assunto
+                )}&body=${encodeURIComponent(corpoEmail)}`;
+              });
+          });
+      });
+    </script>
+  </body>
+</html>
